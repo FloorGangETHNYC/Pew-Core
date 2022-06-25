@@ -9,7 +9,7 @@
 				"deploy:mumbai": "npx hardhat deploy --network rinkeby --tags PewCore",
 				"deploy:matic": "npx hardhat deploy --network mainnet --tags PewCore",
 				"deploy:optimism": "npx hardhat --network optimism_mainnet etherscan-verify",
-				"deploy:optimism_testnet": "npx hardhat --network optimism_testnet etherscan-verify",
+				"verify:optimism_testnet": "npx hardhat --network optimism_testnet etherscan-verify",
 				"verify:mainnet": "npx hardhat --network mainnet etherscan-verify",
 				"verify:rinkeby": "npx hardhat --network rinkeby etherscan-verify",
 				"verify:mumbai": "npx hardhat --network mumbai etherscan-verify",

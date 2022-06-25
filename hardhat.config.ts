@@ -126,7 +126,10 @@ module.exports = {
     },
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      optimisticKovan: process.env.OPTISCAN_API_KEY,
+      polygonMumbai: process.env.ETHERSCAN_API_KEY,
+    },
   },
 
   paths: {
