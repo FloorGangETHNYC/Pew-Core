@@ -6,17 +6,35 @@ import "./PewNFTFactory.sol";
 contract PewCore {
     PewNFTFactory public PEW_NFT_FACTORY;
 
+    mapping(uint256 => string) daoIds;
+
+    uint256 daoCounter;
+
     event DAOCreated(string name, string symbol, address dao);
     event DAOJoined(address indexed member, uint256 indexed _id);
 
     constructor() {}
 
-    function createDAO(string memory name, string memory symbol) public {
+    /**
+     * @notice Create a new DAO.
+     * @param name  name The name of the DAO.
+     * @param symbol The symbol of the DAO.
+     * @param metadataHash Metadata Hash of the DAO
+     * @dev Include a offchain signer to verify if the structure of the datafile is correct
+     */
+    function createDAO(
+        string memory name,
+        string memory symbol,
+        string memory metadataHash
+    ) public {
         PewNFT pewNFT = PEW_NFT_FACTORY.createCollection(
             name,
             symbol,
             address(this)
         );
+
+        daoIds[daoCounter] = metadataHash;
+        daoCounter++;
 
         emit DAOCreated(name, symbol, address(pewNFT));
     }
