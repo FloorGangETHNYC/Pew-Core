@@ -70,7 +70,7 @@ module.exports = {
       accounts: [PRIVATE_KEY],
     },
     mumbai: {
-      url: "https://rpc-mumbai.matic.today",
+      url: "https://rpc-mumbai.maticvigil.com",
       chainId: 80001,
       accounts: [PRIVATE_KEY],
       saveDeployments: true,

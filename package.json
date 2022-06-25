@@ -8,17 +8,19 @@
 				"test": "npx hardhat test",
 				"deploy:mumbai": "npx hardhat deploy --network rinkeby --tags PewCore",
 				"deploy:matic": "npx hardhat deploy --network mainnet --tags PewCore",
-				"deploy:optimism": "",
-				"deploy:optimism_testnet": "",
+				"deploy:optimism": "npx hardhat --network optimism_mainnet etherscan-verify",
+				"deploy:optimism_testnet": "npx hardhat --network optimism_testnet etherscan-verify",
 				"verify:mainnet": "npx hardhat --network mainnet etherscan-verify",
-				"verify:rinkeby": "npx hardhat --network rinkeby etherscan-verify"
+				"verify:rinkeby": "npx hardhat --network rinkeby etherscan-verify",
+				"verify:mumbai": "npx hardhat --network mumbai etherscan-verify",
+				"verify:matic": "npx hardhat --network matic etherscan-verify"
 		},
 		"author": "",
 		"license": "ISC",
 		"dependencies": {
 				"@chainlink/contracts": "^0.4.1",
 				"@ethersproject/hardware-wallets": "^5.6.1",
-				"@nomiclabs/hardhat-ethers": "^2.0.6",
+				"@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
 				"@nomiclabs/hardhat-etherscan": "^3.0.3",
 				"@nomiclabs/hardhat-waffle": "^2.0.3",
 				"@openzeppelin/contracts": "^4.6.0",
