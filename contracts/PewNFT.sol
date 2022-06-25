@@ -2,6 +2,7 @@
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "./Base64.sol";
 
 contract PewNFT is ERC721 {
     using Strings for uint256;
@@ -114,26 +115,55 @@ contract PewNFT is ERC721 {
             "ERC721Metadata: URI query for nonexistent token"
         );
 
-        uint256 _governanceScore = getGovernanceScore(tokenId);
+        return buildMetadata(tokenId);
+    }
 
+    /// @notice Builds the metadata required in accordance ot Opensea requirements
+    /// @param _tokenId Policy ID which will also be the NFT token ID
+    /// @dev Can change public to internal
+    function buildMetadata(uint256 _tokenId)
+        public
+        view
+        returns (string memory)
+    {
+        uint256 _governanceScore = getGovernanceScore(_tokenId);
+        string memory image;
         // NFTS that level up based on the governance score of the token.
         // Storj is used to host the images. Storj enables fast and secure cloud storage and it is built ontop of IPFS.
         if (_governanceScore > 1) {
-            return
-                "https://link.storjshare.io/jvxrj4svnfnz664lnpoawmwnzu2q/demo-bucket%2Ficon-rank-silver.png";
+            image = "https://link.storjshare.io/jvxrj4svnfnz664lnpoawmwnzu2q/demo-bucket%2Ficon-rank-silver.png";
         } else if (_governanceScore > 2) {
-            return
-                "https://link.storjshare.io/ju4dlex6o6lyfjqwxwrc76ua5czq/demo-bucket%2Ficon-rank-gold.png";
+            image = "https://link.storjshare.io/ju4dlex6o6lyfjqwxwrc76ua5czq/demo-bucket%2Ficon-rank-gold.png";
         } else if (_governanceScore > 3) {
-            return
-                "https://link.storjshare.io/jxiaovikkuwcupfqkqueinnno6kq/demo-bucket%2Ficon-rank-platinum.png";
+            image = "https://link.storjshare.io/jxiaovikkuwcupfqkqueinnno6kq/demo-bucket%2Ficon-rank-platinum.png";
         } else if (_governanceScore > 4) {
-            return
-                "https://link.storjshare.io/jurkcbz6kacwnjefr5bhrrucvfdq/demo-bucket%2Ficon-rank-diamond.png";
+            image = "https://link.storjshare.io/jurkcbz6kacwnjefr5bhrrucvfdq/demo-bucket%2Ficon-rank-diamond.png";
         } else {
-            return
-                "https://link.storjshare.io/jubzv3gkgwez5f45x7rgiv7ns72a/demo-bucket%2Ficon-rank-bronze.png";
+            image = "https://link.storjshare.io/jubzv3gkgwez5f45x7rgiv7ns72a/demo-bucket%2Ficon-rank-bronze.png";
         }
+        bytes memory m1 = abi.encodePacked(
+            '{"name":"',
+            name(),
+            " Membership",
+            '", "description":"',
+            name(),
+            " Membership",
+            '", "image": "',
+            image,
+            // adding policyHolder
+            '", "attributes": [{"trait_type":"Governance Score",',
+            '"value":"',
+            Strings.toString(_governanceScore),
+            '"}]'
+        );
+
+        return
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Base64.encode(bytes.concat(m1))
+                )
+            );
     }
 
     function getUpvotes(uint256 tokenId, uint256 index)
@@ -262,7 +292,7 @@ contract PewNFT is ERC721 {
             _exists(tokenId),
             "ERC721Metadata: URI query for nonexistent token"
         );
-        return (block.timestamp - mintedTime[_currentIndex]) / 1 days;
+        return (block.timestamp - mintedTime[tokenId]) / 1 days;
     }
 
     function getGovernanceScore(uint256 tokenId)

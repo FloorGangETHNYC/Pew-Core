@@ -103,6 +103,10 @@ contract PewCore {
         );
     }
 
+    function getContract(uint256 _id) public view returns (address) {
+        return daoIds[_id].contractAddress;
+    }
+
     function setPewNFTFactory(address _pewNFTFactory) public {
         PEW_NFT_FACTORY = PewNFTFactory(_pewNFTFactory);
     }
