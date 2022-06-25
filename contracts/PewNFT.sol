@@ -5,10 +5,11 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 error URIQueryForNonexistentToken();
 
-contract PewNFT {
+contract PewNFT is ERC721 {
     using Strings for uint256;
 
     address public PEW_CORE;
+    string public baseURI;
 
     // The tokenId of the next token to be minted.
     uint128 internal _currentIndex;
