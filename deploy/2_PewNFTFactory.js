@@ -20,7 +20,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     args: [pewCore.address],
   });
 
-  gasLogger.addDeployment(chiefToad);
+  gasLogger.addDeployment(pewNFTFactory);
 };
 
-module.exports.tags = ["ChiefToad"];
+module.exports.tags = ["PewNFTFactory"];
