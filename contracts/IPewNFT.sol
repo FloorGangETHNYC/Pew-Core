@@ -9,4 +9,14 @@ interface PewNFT is IERC721 {
     function totalSupply() external view returns (uint256);
 
     function tokenURI(uint256 tokenId) external view returns (string memory);
+
+    function upvote(uint256 tokenId, uint256 contributionIndex)
+        external
+        view
+        returns (string memory);
+
+    function downvote(uint256 tokenId, uint256 contributionIndex)
+        external
+        view
+        returns (string memory);
 }

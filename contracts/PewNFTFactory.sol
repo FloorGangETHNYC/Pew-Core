@@ -13,6 +13,11 @@ contract PewNFTFactory {
 
     event CollectionCreated(uint256 id, address collection);
 
+    modifier onlyPew() {
+        require(msg.sender == address(PEW_CORE));
+        _;
+    }
+
     constructor(address _pewCore) {
         PEW_CORE = address(_pewCore);
     }
@@ -21,12 +26,13 @@ contract PewNFTFactory {
         string memory name,
         string memory symbol,
         address _pewCore
-    ) public {
+    ) public onlyPew returns (PewNFT) {
         PewNFT pewAddress = new PewNFT(name, symbol, _pewCore);
 
         collections[collectionsCounter] = pewAddress;
         collectionsCounter++;
 
+        return pewAddress;
         // emit CollectionCreated()
     }
 
