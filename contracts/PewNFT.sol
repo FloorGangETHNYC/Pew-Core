@@ -154,7 +154,7 @@ contract PewNFT is ERC721 {
             '", "attributes": [{"trait_type":"Governance Score",',
             '"value":"',
             Strings.toString(_governanceScore),
-            '"}]'
+            '"}]}'
         );
 
         return
