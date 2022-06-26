@@ -131,15 +131,15 @@ contract PewNFT is ERC721 {
         // NFTS that level up based on the governance score of the token.
         // Storj is used to host the images. Storj enables fast and secure cloud storage and it is built ontop of IPFS.
         if (_governanceScore > 1) {
-            image = "https://link.storjshare.io/jvxrj4svnfnz664lnpoawmwnzu2q/demo-bucket%2Ficon-rank-silver.png";
+            image = "ipfs://QmPmcwZTXWovxB1VY5Bu7jXHw4YND3hR8G8CzWr8zb5rB6";
         } else if (_governanceScore > 2) {
-            image = "https://link.storjshare.io/ju4dlex6o6lyfjqwxwrc76ua5czq/demo-bucket%2Ficon-rank-gold.png";
+            image = "ipfs://QmQSVwpjT43GUS9YySzQ7SiWQRsmKUzqaSoaKZ322GD8wf";
         } else if (_governanceScore > 3) {
-            image = "https://link.storjshare.io/jxiaovikkuwcupfqkqueinnno6kq/demo-bucket%2Ficon-rank-platinum.png";
+            image = "ipfs://Qme5NcRM227hMLjLftJexB9RyYgw8qyGzijiXoX7qiWe2o";
         } else if (_governanceScore > 4) {
-            image = "https://link.storjshare.io/jurkcbz6kacwnjefr5bhrrucvfdq/demo-bucket%2Ficon-rank-diamond.png";
+            image = "ipfs://QmPGY273SFsczt2n7NUWYeTKcoQChhR72vGSbW3Fnm4HxT";
         } else {
-            image = "https://link.storjshare.io/jubzv3gkgwez5f45x7rgiv7ns72a/demo-bucket%2Ficon-rank-bronze.png";
+            image = "ipfs://QmcLGFwJKNskZNLN2o3s8oXQrnMnW3wtbYu2ei6YZDviYE";
         }
         bytes memory m1 = abi.encodePacked(
             '{"name":"',
