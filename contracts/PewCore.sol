@@ -50,8 +50,7 @@ contract PewCore {
         uint256 nullifierHash,
         uint256[8] calldata proof
     ) {
-        // first, we make sure this person hasn't done this before
-        if (nullifierHashes[nullifierHash]) revert InvalidNullifier();
+        // Remove duplicate check
 
         // then, we verify they're registered with WorldID, and the input they've provided is correct
         worldId.verifyProof(
@@ -62,9 +61,6 @@ contract PewCore {
             abi.encodePacked(address(this)).hashToField(),
             proof
         );
-
-        // finally, we record they've done this, so they can't do it again (proof of uniqueness)
-        nullifierHashes[nullifierHash] = true;
 
         // your logic here, make sure to emit some kind of event afterwards!
         _;
@@ -85,8 +81,12 @@ contract PewCore {
     function createDAO(
         string memory name,
         string memory symbol,
-        string memory metadataHash
-    ) public {
+        string memory metadataHash,
+        address input,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) public verifyAndExecute(input, root, nullifierHash, proof) {
         PewNFT pewNFT = PEW_NFT_FACTORY.createCollection(
             name,
             symbol,
@@ -98,7 +98,13 @@ contract PewCore {
         emit DAOCreated(name, symbol, address(pewNFT));
     }
 
-    function joinDAO(uint256 _id) public {
+    function joinDAO(
+        uint256 _id,
+        address input,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) public verifyAndExecute(input, root, nullifierHash, proof) {
         require(
             PEW_NFT_FACTORY.getCollection(_id).balanceOf(msg.sender) == 0,
             "User already minted"
@@ -140,8 +146,12 @@ contract PewCore {
     function upvote(
         uint256 _id,
         uint256 _tokenId,
-        uint256 _contributionIndex
-    ) public {
+        uint256 _contributionIndex,
+        address input,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) public verifyAndExecute(input, root, nullifierHash, proof) {
         PEW_NFT_FACTORY.getCollection(_id).upvote(_tokenId, _contributionIndex);
     }
 
@@ -154,8 +164,12 @@ contract PewCore {
     function downvote(
         uint256 _id,
         uint256 _tokenId,
-        uint256 _contributionIndex
-    ) public {
+        uint256 _contributionIndex,
+        address input,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) public verifyAndExecute(input, root, nullifierHash, proof) {
         PEW_NFT_FACTORY.getCollection(_id).downvote(
             _tokenId,
             _contributionIndex
