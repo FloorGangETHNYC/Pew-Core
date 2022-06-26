@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.7;
+pragma solidity ^0.8.10;
 
 import {ByteHasher} from "./helpers/ByteHasher.sol";
 import {IWorldID} from "./interfaces/IWorldID.sol";
@@ -49,7 +49,7 @@ contract PewCore {
         uint256 root,
         uint256 nullifierHash,
         uint256[8] calldata proof
-    ) public {
+    ) {
         // first, we make sure this person hasn't done this before
         if (nullifierHashes[nullifierHash]) revert InvalidNullifier();
 
@@ -118,8 +118,12 @@ contract PewCore {
     function addContribution(
         uint256 _id,
         uint256 _tokenId,
-        string memory ipfsHash
-    ) public verifyAndExecute() {
+        string memory ipfsHash,
+        address input,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) public verifyAndExecute(input, root, nullifierHash, proof) {
         require(bytes(ipfsHash).length == 46, "Incorrect Hash Length");
         require(bytes(ipfsHash)[0] == 0x51, "1st char not Q");
         require(bytes(ipfsHash)[1] == 0x6d, "2nd chat not m");
