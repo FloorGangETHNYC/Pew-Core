@@ -19,4 +19,4 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }: any) => {
   gasLogger.addDeployment(giv3Core);
 };
 
-module.exports.tags = ["ImageStorageStatic"];
+module.exports.tags = ["ImageStorageStatic", "Mumbai"];

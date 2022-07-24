@@ -4,9 +4,14 @@ pragma solidity ^0.8.10;
 // import erc20
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract Treasury {
+import "./interface/IGiv3Core.sol";
+
+contract Giv3Treasury {
     uint256 public ethBalance;
-    address public GIV3_CORE;
+    IGiv3Core public GIV3_CORE;
+
+    string public name;
+
     mapping(address => uint256) public tokenBalances;
 
     event ETHDeposited(uint256 amount);
@@ -19,8 +24,9 @@ contract Treasury {
         _;
     }
 
-    constructor(address _giv3Core) {
-        GIV3_CORE = address(_giv3Core);
+    constructor(string memory _name, IGiv3Core _giv3Core) {
+        name = _name;
+        GIV3_CORE = _giv3Core;
     }
 
     function depositETH() public payable onlyGiv3 {

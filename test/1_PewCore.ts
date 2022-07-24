@@ -1,6 +1,6 @@
 import { BigNumber } from "ethers";
 import { Giv3Core } from "./../typechain/contracts/Giv3Core";
-import { Giv3NFT } from "./../typechain/contracts/IGiv3NFT.sol/Giv3NFT";
+import { Giv3NFT } from "./../typechain/contracts/Giv3NFT";
 import { Giv3NFTFactory } from "./../typechain/contracts/Giv3NFTFactory";
 import { expect } from "chai";
 
@@ -16,18 +16,14 @@ describe("Giv3Core", function () {
     [owner] = await ethers.getSigners();
 
     // Setup Test
-    await deployments.fixture(["Giv3Core", "Giv3NFTFactory"]);
+    await deployments.fixture(["Mumbai"]);
 
     giv3Core = await ethers.getContract("Giv3Core", owner);
-    giv3NftFactory = await ethers.getContract("Giv3NFTFactory", owner);
+    // giv3NftFactory = await ethers.getContract("Giv3NFTFactory", owner);
   });
 
   it("Start DAO and Join", async function () {
-    await giv3Core.createDAO(
-      "Giv3DAO",
-      "PD",
-      "QmZtaXqhcRbfBSNERmo9wKHvkTpug76ivuzM1ZTD3NcpDt"
-    );
+    await giv3Core.createDAO("Eye", "Eye", "Eye Charity");
 
     await giv3Core.joinDAO(0);
 

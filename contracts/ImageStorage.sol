@@ -3,7 +3,7 @@
 // Storage Contract for Giv3NFT (combined, layered)
 pragma solidity ^0.8.10;
 
-import "./IImageStorage.sol";
+import "./interface/IImageStorage.sol";
 
 contract ImageStorage is IImageStorage {
     string public body =
@@ -127,15 +127,15 @@ contract ImageStorage is IImageStorage {
         view
         returns (string memory)
     {
-        if (collectionIndex == 1) {
+        if (collectionIndex == 0) {
             return getLayer1(imageIndex);
-        } else if (collectionIndex == 2) {
+        } else if (collectionIndex == 1) {
             return getLayer2(imageIndex);
-        } else if (collectionIndex == 3) {
+        } else if (collectionIndex == 2) {
             return getLayer3(imageIndex);
-        } else if (collectionIndex == 4) {
+        } else if (collectionIndex == 3) {
             return getLayer4(imageIndex);
-        } else if (collectionIndex == 5) {
+        } else if (collectionIndex == 4) {
             return getLayer5(imageIndex);
         } else {
             return "";

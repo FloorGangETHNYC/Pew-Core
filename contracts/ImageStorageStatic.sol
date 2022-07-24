@@ -3,7 +3,7 @@
 // Storage contract for individual collections
 pragma solidity ^0.8.10;
 
-import "./IImageStorage.sol";
+import "./interface/IImageStorage.sol";
 
 contract ImageStorageStatic is IImageStorage {
     string public body =

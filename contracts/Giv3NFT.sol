@@ -2,11 +2,12 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./Base64.sol";
-import "./IGiv3Core.sol";
-import "./IImageStorage.sol";
+import "./interface/IGiv3Core.sol";
+import "./interface/IImageStorage.sol";
 
-contract Giv3NFT is ERC721 {
+contract Giv3NFT is ERC721, ReentrancyGuard {
     using Strings for uint256;
 
     // Store data about the contributions made by a user holding the token
@@ -33,6 +34,8 @@ contract Giv3NFT is ERC721 {
     uint256[3] public mul = [1, 1, 1];
 
     uint256 public collectionIndex;
+
+    mapping(address => uint256) public tokenMapping;
 
     event DonationAdded(
         address indexed user,
@@ -69,9 +72,19 @@ contract Giv3NFT is ERC721 {
         _;
     }
 
-    function mint(address _to) external onlyGiv3 returns (uint256) {
+    function mint(address _to)
+        external
+        onlyGiv3
+        nonReentrant
+        returns (uint256)
+    {
+        require(
+            balanceOf(msg.sender) == 0,
+            "Cannot mint more than one token at a time"
+        );
         _safeMint(_to, _currentIndex);
         mintedTime[_currentIndex] = block.timestamp;
+        tokenMapping[msg.sender] = _currentIndex;
         _currentIndex++;
         return _currentIndex - 1;
     }
@@ -79,11 +92,8 @@ contract Giv3NFT is ERC721 {
     /**
      * R@notice Add Update Donation balance.
      */
-    function addDonation(uint256 amount, uint256 tokenId) external onlyGiv3 {
-        require(
-            tx.origin == ownerOf(tokenId),
-            "Only the owner can add a contribution"
-        );
+    function addDonation(uint256 amount) external onlyGiv3 {
+        uint256 tokenId = tokenMapping[msg.sender];
 
         donations[tokenId] += amount;
         emit DonationAdded(msg.sender, tokenId, amount);
@@ -154,7 +164,10 @@ contract Giv3NFT is ERC721 {
         string memory image;
         // NFTS that level up based on the governance score of the token.
         // Get Image from Image Storage Contract
-        IMAGE_STORAGE.getImageForCollection(collectionIndex, _powerlevel);
+        image = IMAGE_STORAGE.getImageForCollection(
+            collectionIndex,
+            _powerlevel
+        );
         bytes memory m1 = abi.encodePacked(
             '{"name":"',
             name(),

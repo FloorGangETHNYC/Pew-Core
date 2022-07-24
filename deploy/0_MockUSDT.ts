@@ -9,14 +9,16 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }: any) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
-  console.log("Chain ID:", chainId);
+  console.log(`Deploying MOCK Contract... from ${deployer}`);
+  // Config
+  const INITIAL_SUPPLY = ethers.utils.parseEther("100000000"); // 100_000_000 Tokens
 
-  let giv3Core = await deploy("ImageStorage", {
+  let mockToken = await deploy("MockUSDT", {
     from: deployer,
-    args: [],
+    args: [INITIAL_SUPPLY],
   });
 
-  gasLogger.addDeployment(giv3Core);
+  gasLogger.addDeployment(mockToken);
 };
 
-module.exports.tags = ["ImageStorage", "Mumbai"];
+module.exports.tags = ["MockUSDT", "Mumbai"];
