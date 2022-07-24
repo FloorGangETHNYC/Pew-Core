@@ -11,12 +11,12 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }: any) => {
 
   console.log("Chain ID:", chainId);
 
-  let pewCore = await deploy("PewCore", {
+  let giv3Core = await deploy("ImageStorageStatic", {
     from: deployer,
     args: [],
   });
 
-  gasLogger.addDeployment(pewCore);
+  gasLogger.addDeployment(giv3Core);
 };
 
-module.exports.tags = ["PewCore"];
+module.exports.tags = ["ImageStorageStatic"];

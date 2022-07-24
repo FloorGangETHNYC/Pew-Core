@@ -12,21 +12,21 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }: any) => {
 
   console.log("Chain ID:", chainId);
 
-  // Get PEW core contract
+  // Get GIV3 core contract
 
-  let pewCore = await deployments.get("PewCore");
+  let giv3Core = await deployments.get("Giv3Core");
 
-  let pewNFTFactory = await deploy("PewNFTFactory", {
+  let giv3NFTFactory = await deploy("Giv3NFTFactory", {
     from: deployer,
-    args: [pewCore.address],
+    args: [giv3Core.address],
   });
 
-  gasLogger.addDeployment(pewNFTFactory);
+  gasLogger.addDeployment(giv3NFTFactory);
 
-  // set pewNFTFactory on PEW core contract
+  // set giv3NFTFactory on GIV3 core contract
   let owner = (await ethers.getSigners())[0];
-  pewCore = await ethers.getContractAt("PewCore", pewCore.address, owner);
-  await pewCore.setPewNFTFactory(pewNFTFactory.address);
+  giv3Core = await ethers.getContractAt("Giv3Core", giv3Core.address, owner);
+  await giv3Core.setGiv3NFTFactory(giv3NFTFactory.address);
 };
 
-module.exports.tags = ["PewNFTFactory"];
+module.exports.tags = ["Giv3NFTFactory"];

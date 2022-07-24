@@ -1,39 +1,39 @@
 import { BigNumber } from "ethers";
-import { PewCore } from "./../typechain/contracts/PewCore";
-import { PewNFT } from "./../typechain/contracts/IPewNFT.sol/PewNFT";
-import { PewNFTFactory } from "./../typechain/contracts/PewNFTFactory";
+import { Giv3Core } from "./../typechain/contracts/Giv3Core";
+import { Giv3NFT } from "./../typechain/contracts/IGiv3NFT.sol/Giv3NFT";
+import { Giv3NFTFactory } from "./../typechain/contracts/Giv3NFTFactory";
 import { expect } from "chai";
 
 const { ethers, deployments } = require("hardhat");
 
-describe("PewCore", function () {
+describe("Giv3Core", function () {
   let owner: any;
-  let pewCore: PewCore;
-  let pewNftFactory: PewNFTFactory;
+  let giv3Core: Giv3Core;
+  let giv3NftFactory: Giv3NFTFactory;
 
   before(async function () {
     // Get Signers
     [owner] = await ethers.getSigners();
 
     // Setup Test
-    await deployments.fixture(["PewCore", "PewNFTFactory"]);
+    await deployments.fixture(["Giv3Core", "Giv3NFTFactory"]);
 
-    pewCore = await ethers.getContract("PewCore", owner);
-    pewNftFactory = await ethers.getContract("PewNFTFactory", owner);
+    giv3Core = await ethers.getContract("Giv3Core", owner);
+    giv3NftFactory = await ethers.getContract("Giv3NFTFactory", owner);
   });
 
   it("Start DAO and Join", async function () {
-    await pewCore.createDAO(
-      "PewDAO",
+    await giv3Core.createDAO(
+      "Giv3DAO",
       "PD",
       "QmZtaXqhcRbfBSNERmo9wKHvkTpug76ivuzM1ZTD3NcpDt"
     );
 
-    await pewCore.joinDAO(0);
+    await giv3Core.joinDAO(0);
 
-    const daoAddr = await pewCore.getContract(0);
+    const daoAddr = await giv3Core.getContract(0);
     console.log("🚀 | dao", daoAddr);
-    let dao: PewNFT = await ethers.getContractAt("PewNFT", daoAddr, owner);
+    let dao: Giv3NFT = await ethers.getContractAt("Giv3NFT", daoAddr, owner);
     console.log(await dao.tokenURI(0));
   });
 });

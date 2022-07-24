@@ -1,10 +1,5 @@
-import "@nomiclabs/hardhat-waffle";
-import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-ethers";
-import "hardhat-gas-reporter";
+import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-deploy";
-import "@typechain/hardhat";
-import "solidity-coverage";
 import "dotenv/config";
 
 import { task } from "hardhat/config";
@@ -103,7 +98,7 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.7",
+        version: "0.8.10",
         settings: {
           optimizer: {
             enabled: true,
