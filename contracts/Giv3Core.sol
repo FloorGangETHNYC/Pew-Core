@@ -7,10 +7,15 @@ import "./Giv3NFTFactory.sol";
 import "./Giv3TreasuryFactory.sol";
 import "./Giv3AvatarNFT.sol";
 
-contract Giv3Core is IGiv3Core {
+// import ownable from openzeppelin
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract Giv3Core is IGiv3Core, Ownable {
     Giv3NFTFactory public GIV3_NFT_FACTORY;
     Giv3TreasuryFactory public GIV3_TREASURY_FACTORY;
     Giv3AvatarNFT public GIV3_AVATAR_NFT;
+    IERC20 public USDT;
 
     struct DAO {
         address contractAddress;
@@ -27,23 +32,28 @@ contract Giv3Core is IGiv3Core {
 
     constructor(
         IImageStorage staticImageStorage,
-        IImageStorage dynamicImageStorage
+        IImageStorage dynamicImageStorage,
+        IERC20 _usdt
     ) {
-        GIV3_NFT_FACTORY = new Giv3NFTFactory(
-            IGiv3Core(address(this)),
-            staticImageStorage,
-            dynamicImageStorage
-        );
+        USDT = _usdt;
+    }
 
-        GIV3_TREASURY_FACTORY = new Giv3TreasuryFactory(
-            IGiv3Core(address(this))
-        );
+    function setGiv3NFTFactory(Giv3NFTFactory _giv3NFTFactory)
+        public
+        onlyOwner
+    {
+        GIV3_NFT_FACTORY = _giv3NFTFactory;
+    }
 
-        GIV3_AVATAR_NFT = new Giv3AvatarNFT(
-            "GIV3 Avatar",
-            "GIV3NFT",
-            IGiv3Core(address(this))
-        );
+    function setGiv3TreasuryFactory(Giv3TreasuryFactory _giv3TreasuryFactory)
+        public
+        onlyOwner
+    {
+        GIV3_TREASURY_FACTORY = _giv3TreasuryFactory;
+    }
+
+    function setGiv3AvatarNFT(Giv3AvatarNFT _giv3AvatarNFT) public onlyOwner {
+        GIV3_AVATAR_NFT = _giv3AvatarNFT;
     }
 
     /**
@@ -61,11 +71,6 @@ contract Giv3Core is IGiv3Core {
         Giv3NFT giv3NFT = GIV3_NFT_FACTORY.createCollection(name, symbol);
         Giv3Treasury giv3Treasury = GIV3_TREASURY_FACTORY.createTreasury(name);
 
-        // Mint GIV3Avatar NFT for user if not already exists
-        if (GIV3_AVATAR_NFT.balanceOf(msg.sender) == 0) {
-            GIV3_AVATAR_NFT.mint(msg.sender);
-        }
-
         daoIds[daoCounter] = DAO(address(giv3NFT), description);
         treasuryIds[daoCounter] = address(giv3Treasury);
         daoCounter++;
@@ -77,6 +82,12 @@ contract Giv3Core is IGiv3Core {
             GIV3_NFT_FACTORY.getCollection(_id).balanceOf(msg.sender) == 0,
             "User already minted"
         );
+
+        // Mint GIV3Avatar NFT for user if not already exists
+        if (GIV3_AVATAR_NFT.balanceOf(msg.sender) == 0) {
+            GIV3_AVATAR_NFT.mint(msg.sender);
+        }
+
         GIV3_NFT_FACTORY.getCollection(_id).mint(msg.sender);
 
         emit DAOJoined(msg.sender, _id);
@@ -84,24 +95,18 @@ contract Giv3Core is IGiv3Core {
 
     function donate(uint256 daoId, uint256 _donationAmount) public {
         // Transfer USDT to sub-DAO Treasury
-        GIV3_TREASURY_FACTORY.getTreasury(treasuryIds[daoId]).transfer(
-            msg.sender,
-            _donationAmount
+        address _treasuryAddress = address(
+            GIV3_TREASURY_FACTORY.getTreasury(daoId)
         );
 
+        USDT.transferFrom(msg.sender, _treasuryAddress, _donationAmount);
+
         // Update Donated amount onto user's subDAO NFT
-        GIV3_NFT_FACTORY.getCollection(daoId).addDonation(
-            msg.sender,
-            _donationAmount
-        );
+        GIV3_NFT_FACTORY.getCollection(daoId).addDonation(_donationAmount);
     }
 
     function getContract(uint256 _id) public view returns (address) {
         return daoIds[_id].contractAddress;
-    }
-
-    function setGiv3NFTFactory(address _giv3NFTFactory) public {
-        GIV3_NFT_FACTORY = Giv3NFTFactory(_giv3NFTFactory);
     }
 
     function getPowerLevels(uint256 _id, uint256 _tokenId)
@@ -110,5 +115,9 @@ contract Giv3Core is IGiv3Core {
         returns (uint256)
     {
         return GIV3_NFT_FACTORY.getCollection(_id).getPowerLevel(_tokenId);
+    }
+
+    function hasJoinedDAO(uint256 _id) public view returns (bool) {
+        return GIV3_NFT_FACTORY.getCollection(_id).balanceOf(msg.sender) > 0;
     }
 }

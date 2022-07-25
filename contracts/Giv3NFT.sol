@@ -79,12 +79,12 @@ contract Giv3NFT is ERC721, ReentrancyGuard {
         returns (uint256)
     {
         require(
-            balanceOf(msg.sender) == 0,
+            balanceOf(tx.origin) == 0,
             "Cannot mint more than one token at a time"
         );
         _safeMint(_to, _currentIndex);
         mintedTime[_currentIndex] = block.timestamp;
-        tokenMapping[msg.sender] = _currentIndex;
+        tokenMapping[tx.origin] = _currentIndex;
         _currentIndex++;
         return _currentIndex - 1;
     }
@@ -93,10 +93,10 @@ contract Giv3NFT is ERC721, ReentrancyGuard {
      * R@notice Add Update Donation balance.
      */
     function addDonation(uint256 amount) external onlyGiv3 {
-        uint256 tokenId = tokenMapping[msg.sender];
+        uint256 tokenId = tokenMapping[tx.origin];
 
         donations[tokenId] += amount;
-        emit DonationAdded(msg.sender, tokenId, amount);
+        emit DonationAdded(tx.origin, tokenId, amount);
     }
 
     /**
@@ -109,7 +109,7 @@ contract Giv3NFT is ERC721, ReentrancyGuard {
         );
 
         experience[tokenId] += amount;
-        emit ExperienceAdded(msg.sender, tokenId, amount);
+        emit ExperienceAdded(tx.origin, tokenId, amount);
     }
 
     /**
@@ -122,7 +122,7 @@ contract Giv3NFT is ERC721, ReentrancyGuard {
         );
 
         energy[tokenId] += amount;
-        emit EnergyAdded(msg.sender, tokenId, amount);
+        emit EnergyAdded(tx.origin, tokenId, amount);
     }
 
     /**
@@ -161,12 +161,22 @@ contract Giv3NFT is ERC721, ReentrancyGuard {
         returns (string memory)
     {
         uint256 _powerlevel = getPowerLevel(_tokenId);
+
+        uint256 _powerIndex;
+        if (_powerlevel > 0) {
+            _powerIndex = 0;
+        } else if (_powerlevel >= 100) {
+            _powerIndex = 1;
+        } else if (_powerlevel >= 1000000) {
+            _powerIndex = 2;
+        }
+
         string memory image;
         // NFTS that level up based on the governance score of the token.
         // Get Image from Image Storage Contract
         image = IMAGE_STORAGE.getImageForCollection(
             collectionIndex,
-            _powerlevel
+            _powerIndex
         );
         bytes memory m1 = abi.encodePacked(
             '{"name":"',
@@ -193,135 +203,6 @@ contract Giv3NFT is ERC721, ReentrancyGuard {
             );
     }
 
-    function getUpvotes(uint256 tokenId, uint256 index)
-        public
-        view
-        returns (uint256)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-
-        return contributions[tokenId][index].upvotes;
-    }
-
-    function getDownvotes(uint256 tokenId, uint256 index)
-        public
-        view
-        returns (uint256)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-
-        return contributions[tokenId][index].downvotes;
-    }
-
-    function getTotalUpvotes(uint256 tokenId)
-        public
-        view
-        returns (uint256 _totalUpvotes)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-
-        for (uint256 i = 0; i < contributions[tokenId].length; i++) {
-            _totalUpvotes += contributions[tokenId][i].upvotes;
-        }
-        return _totalUpvotes;
-    }
-
-    function getTotalDownvotes(uint256 tokenId)
-        public
-        view
-        returns (uint256 _totalDownvotes)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-
-        for (uint256 i = 0; i < contributions[tokenId].length; i++) {
-            _totalDownvotes += contributions[tokenId][i].downvotes;
-        }
-        return _totalDownvotes;
-    }
-
-    function getContribution(uint256 tokenId, uint256 index)
-        public
-        view
-        returns (string memory)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-        return
-            string(
-                abi.encodePacked(
-                    "https://ipfs.io/ipfs/",
-                    contributions[tokenId][index].ipfsHash
-                )
-            );
-    }
-
-    function getAllContributions(uint256 tokenId)
-        public
-        view
-        returns (string memory)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-        string memory contributionsString = "";
-        for (uint256 i = 0; i < contributions[tokenId].length; i++) {
-            if (i + 1 < contributions[tokenId].length) {
-                string(
-                    abi.encodePacked(
-                        contributionsString,
-                        "https://ipfs.io/ipfs/",
-                        contributions[tokenId][i].ipfsHash,
-                        ","
-                    )
-                );
-            } else {
-                string(
-                    abi.encodePacked(
-                        contributionsString,
-                        "https://ipfs.io/ipfs/",
-                        contributions[tokenId][i].ipfsHash
-                    )
-                );
-            }
-        }
-        return contributionsString;
-    }
-
-    function getContributionCount(uint256 tokenId)
-        public
-        view
-        returns (uint256 _contributionCount)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-        return contributions[tokenId].length;
-    }
-
-    function getTimeScore(uint256 tokenId) public view returns (uint256) {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-        return (block.timestamp - mintedTime[tokenId]) / 1 days;
-    }
-
     function getDonationScore(uint256 tokenId) public view returns (uint256) {
         require(
             _exists(tokenId),
@@ -346,19 +227,19 @@ contract Giv3NFT is ERC721, ReentrancyGuard {
         return energy[tokenId];
     }
 
-    function getPowerLevel(uint256 tokenId)
+    /// @dev get power level of msg sender
+    function getPowerLevel(uint256 _tokenId)
         public
         view
         returns (uint256 _powerLevel)
     {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
+        if (!_exists(_tokenId)) {
+            return 0;
+        }
 
-        uint256 _donationScore = getDonationScore(tokenId);
-        uint256 _experienceScore = getExperienceScore(tokenId);
-        uint256 _energyScore = getEnergyScore(tokenId);
+        uint256 _donationScore = getDonationScore(_tokenId) / 10**18;
+        uint256 _experienceScore = getExperienceScore(_tokenId);
+        uint256 _energyScore = getEnergyScore(_tokenId);
 
         _powerLevel =
             mul[0] *

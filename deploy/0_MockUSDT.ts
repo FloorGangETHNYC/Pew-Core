@@ -11,7 +11,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }: any) => {
 
   console.log(`Deploying MOCK Contract... from ${deployer}`);
   // Config
-  const INITIAL_SUPPLY = ethers.utils.parseEther("100000000"); // 100_000_000 Tokens
+  const INITIAL_SUPPLY = ethers.utils.parseEther("1000000000000"); // 100_000_000 Tokens
 
   let mockToken = await deploy("MockUSDT", {
     from: deployer,

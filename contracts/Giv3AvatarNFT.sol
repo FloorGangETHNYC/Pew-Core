@@ -17,27 +17,32 @@ contract Giv3AvatarNFT is ERC721 {
         uint256 layer_5_index;
     }
 
-    address public storageContract;
+    IImageStorage public DYNAMIC_IMAGE_STORAGE;
     IGiv3Core public GIV3_CORE;
     string[] private z = [
-        '<svg width="100%" height="100%" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">',
-        '"<image width="32" height="32" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="',
-        '"/> <image width="32" height="32" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="',
-        '"/> <image width="32" height="32" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="',
-        '"/> <image width="32" height="32" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="',
-        '"/> <image width="32" height="32" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="',
+        '<svg width="100%" height="100%" version="1.1" viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">',
+        '"<image width="560" height="560" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="', // add base
+        '"/> <image width="560" height="560" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="', // add shoes
+        '"/> <image width="560" height="560" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="', // add clothes
+        '"/> <image width="560" height="560" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="', // add necklace
+        '"/> <image width="560" height="560" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="', // add specs
+        '"/> <image width="560" height="560" image-rendering="pixelated" preserveAspectRatio="xMidYMid" xlink:href="', // add hat
         '"/> </svg>'
     ];
 
     // The tokenId of the next token to be minted.
     uint128 internal _currentIndex;
 
+    mapping(address => uint256) public tokenMapping;
+
     constructor(
         string memory name_,
         string memory symbol_,
-        IGiv3Core _giv3Core
+        IGiv3Core _giv3Core,
+        IImageStorage _imageStorage
     ) ERC721(name_, symbol_) {
         GIV3_CORE = _giv3Core;
+        DYNAMIC_IMAGE_STORAGE = _imageStorage;
     }
 
     modifier onlyGiv3() {
@@ -47,6 +52,7 @@ contract Giv3AvatarNFT is ERC721 {
 
     function mint(address _to) external onlyGiv3 {
         _safeMint(_to, _currentIndex);
+        tokenMapping[tx.origin] = _currentIndex;
         _currentIndex++;
     }
 
@@ -58,41 +64,26 @@ contract Giv3AvatarNFT is ERC721 {
         return _currentIndex;
     }
 
-    function genPNG(CompoundImageData memory data)
-        internal
-        view
-        returns (string memory)
-    {
-        // Get Token Power levels
-        uint256 power_1 = data.layer_1_index;
-        uint256 power_2 = data.layer_2_index;
-        uint256 power_3 = data.layer_3_index;
-        uint256 power_4 = data.layer_4_index;
-        uint256 power_5 = data.layer_5_index;
-
+    function genPNG(
+        uint256 power_1,
+        uint256 power_2,
+        uint256 power_3,
+        uint256 power_4,
+        uint256 power_5
+    ) internal view returns (string memory) {
         // Get Image Levels
-        string memory layer_1 = IImageStorage(storageContract).getLayer1(
-            power_1
-        );
-        string memory layer_2 = IImageStorage(storageContract).getLayer2(
-            power_2
-        );
-        string memory layer_3 = IImageStorage(storageContract).getLayer3(
-            power_3
-        );
-        string memory layer_4 = IImageStorage(storageContract).getLayer4(
-            power_4
-        );
-        string memory layer_5 = IImageStorage(storageContract).getLayer5(
-            power_5
-        );
+        string memory base = DYNAMIC_IMAGE_STORAGE.getBody();
+        string memory layer_1 = DYNAMIC_IMAGE_STORAGE.getLayer1(power_1);
+        string memory layer_2 = DYNAMIC_IMAGE_STORAGE.getLayer2(power_2);
+        string memory layer_3 = DYNAMIC_IMAGE_STORAGE.getLayer3(power_3);
+        string memory layer_4 = DYNAMIC_IMAGE_STORAGE.getLayer4(power_4);
+        string memory layer_5 = DYNAMIC_IMAGE_STORAGE.getLayer5(power_5);
 
         // Get Image Data
-        string memory output = string(
-            abi.encodePacked(z[0], z[1], layer_1, z[2])
-        );
-        output = string(abi.encodePacked(output, layer_2, z[3], layer_3, z[4]));
-        output = string(abi.encodePacked(output, layer_4, z[5], layer_5, z[6]));
+        string memory output = string(abi.encodePacked(z[0], z[1], base, z[2]));
+        output = string(abi.encodePacked(output, layer_1, z[3]));
+        output = string(abi.encodePacked(output, layer_2, z[4], layer_3, z[5]));
+        output = string(abi.encodePacked(output, layer_4, z[6], layer_5, z[7]));
 
         return output;
     }
@@ -105,13 +96,11 @@ contract Giv3AvatarNFT is ERC721 {
     {
         require(_exists(tokenId), "TokenID does not exist");
 
-        CompoundImageData memory data = CompoundImageData(
-            GIV3_CORE.getPowerLevels(1, tokenId), // Shoes
-            GIV3_CORE.getPowerLevels(2, tokenId), // Clothes
-            GIV3_CORE.getPowerLevels(3, tokenId), // Necklace
-            GIV3_CORE.getPowerLevels(4, tokenId), // Specs
-            GIV3_CORE.getPowerLevels(5, tokenId) // Hat
-        );
+        uint256 _power_1 = GIV3_CORE.getPowerLevels(0, tokenId);
+        uint256 _power_2 = GIV3_CORE.getPowerLevels(1, tokenId);
+        uint256 _power_3 = GIV3_CORE.getPowerLevels(2, tokenId);
+        uint256 _power_4 = GIV3_CORE.getPowerLevels(3, tokenId);
+        uint256 _power_5 = GIV3_CORE.getPowerLevels(4, tokenId);
 
         string memory json = string(
             abi.encodePacked(
@@ -122,42 +111,45 @@ contract Giv3AvatarNFT is ERC721 {
                 '",'
             )
         );
-
-        json = string(
-            abi.encodePacked(
-                json,
-                '"description": "This is a NFT of the first initial of my name!",'
-            )
-        );
+        json = string(abi.encodePacked(json, '"description": "Giv3 NFT!",'));
         // hat, specs , necklace, clothes, shoes
         json = string(
             abi.encodePacked(
                 json,
                 '"attributes": [{"trait_type": "Hat", "value": "',
-                data.layer_5_index.toString(),
+                _power_5.toString(),
                 '"},',
                 '{"trait_type": "Specs", "value": "',
-                data.layer_4_index.toString(),
+                _power_4.toString(),
                 '"},',
                 '{"trait_type": "Necklace", "value": "',
-                data.layer_3_index.toString(),
+                _power_3.toString(),
                 '"},',
                 '{"trait_type": "Clothes", "value": "',
-                data.layer_2_index.toString(),
-                '"}',
+                _power_2.toString(),
+                '"},',
                 '{"trait_type": "Shoes", "value": "',
-                data.layer_1_index.toString(),
+                _power_1.toString(),
                 '"}],'
             )
         );
-
         json = Base64.encode(
             bytes(
                 string(
                     abi.encodePacked(
                         json,
                         '"image_data": "data:image/svg+xml;base64,',
-                        Base64.encode(bytes(genPNG(data))),
+                        Base64.encode(
+                            bytes(
+                                genPNG(
+                                    _power_1,
+                                    _power_2,
+                                    _power_3,
+                                    _power_4,
+                                    _power_5
+                                )
+                            )
+                        ),
                         '"}'
                     )
                 )

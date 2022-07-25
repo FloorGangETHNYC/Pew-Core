@@ -12,8 +12,6 @@ interface IGiv3Core {
 
     function getContract(uint256 _id) external view returns (address);
 
-    function setGiv3NFTFactory(address _giv3NFTFactory) external;
-
     function getPowerLevels(uint256 _id, uint256 _tokenId)
         external
         view

@@ -12,21 +12,20 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }: any) => {
   console.log("Chain ID:", chainId);
 
   // Get Image Storage Contract
+  const giv3Core = await deployments.get("Giv3Core");
+
+  // Get Image Storage Static Contract
   const imageStorage = await deployments.get("ImageStorage");
 
   // Get Image Storage Static Contract
-
   const imageStorageStatic = await deployments.get("ImageStorageStatic");
 
-  // Get MockUSDT Contract
-  const mockUSDT = await deployments.get("MockUSDT");
-
-  let giv3Core = await deploy("Giv3Core", {
+  let contract = await deploy("Giv3TreasuryFactory", {
     from: deployer,
-    args: [imageStorageStatic.address, imageStorage.address, mockUSDT.address],
+    args: [giv3Core.address],
   });
 
-  gasLogger.addDeployment(giv3Core);
+  gasLogger.addDeployment(contract);
 };
 
-module.exports.tags = ["Giv3Core", "Mumbai"];
+module.exports.tags = ["Giv3TreasuryFactory", "Mumbai"];
